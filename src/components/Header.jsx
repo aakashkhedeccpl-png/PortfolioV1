@@ -1,10 +1,6 @@
-// Header.jsx (plain CSS, no Tailwind)
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Github, Linkedin, Mail, Menu, X } from "lucide-react";
-import "./Header.css"; // Plain CSS file — required
-
-
+import React, { useState, useEffect } from "react";
+import { Menu, X, Github, Linkedin, Mail } from "lucide-react";
+import "./Header.css";
 
 const navLinks = [
   { id: "home", label: "Home" },
@@ -14,132 +10,135 @@ const navLinks = [
   { id: "contact", label: "Contact" },
 ];
 
-const Header = () => {
-  const [open, setOpen] = useState(false);
+export default function Header() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState("home");
 
-  const logoVariant = { hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0 } };
-  const navItemVariant = {
-    hidden: { opacity: 0, y: -8 },
-    visible: (i) => ({ opacity: 1, y: 0, transition: { delay: i * 0.06 } }),
-  };
-  const mobileMenuVariants = {
-    hidden: { opacity: 0, y: -10 },
-    enter: { opacity: 1, y: 0, transition: { duration: 0.18 } },
-    exit: { opacity: 0, y: -6, transition: { duration: 0.12 } },
-  };
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+
+      // Active section detection
+      const sections = navLinks.map((link) =>
+        document.getElementById(link.id)
+      );
+      const scrollPos = window.scrollY + 150;
+
+      sections.forEach((section, idx) => {
+        if (section) {
+          const top = section.offsetTop;
+          const height = section.offsetHeight;
+          if (scrollPos >= top && scrollPos < top + height) {
+            setActiveSection(navLinks[idx].id);
+          }
+        }
+      });
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <header className="hd-root" >
-      <div className="hd-container">
-       
-        <motion.a
-          href="#home"
-          className="hd-brand"
-          initial="hidden"
-          animate="visible"
-          variants={logoVariant}
-          aria-label="Aakash.Dev - Home"
-        >
-          {/* AD badge (styled in CSS) */}
-          <motion.div className="hd-badge" whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.98 }}>
-            AD
-          </motion.div>
-
-          {/* Brand texts (hidden on small screens via CSS) */}
-          <div className="hd-brand-texts">
-            <div className="hd-name">
-              Aakash<span className="hd-accent">.Dev</span>
-            </div>
-            <div className="hd-role">Frontend Engineer</div>
+    <header className={`header ${scrolled ? "header--scrolled" : ""}`}>
+      <div className="header__container">
+        {/* Logo */}
+        <a href="#home" className="header__logo">
+          <div className="header__logo-icon">
+            <span>A</span>
           </div>
-        </motion.a>
+          <div className="header__logo-text">
+            <span className="header__logo-name">Aakash</span>
+            <span className="header__logo-role">Software Engineer</span>
+          </div>
+        </a>
 
-        {/* Center: Desktop navigation (visible on wider screens) */}
-        <nav className="hd-nav" aria-label="Primary Navigation">
-          {navLinks.map((link, idx) => (
-            <motion.a
+        {/* Desktop Navigation */}
+        <nav className="header__nav">
+          {navLinks.map((link) => (
+            <a
               key={link.id}
               href={`#${link.id}`}
-              className="hd-nav-link"
-              initial="hidden"
-              animate="visible"
-              custom={idx}
-              variants={navItemVariant}
+              className={`header__nav-link ${
+                activeSection === link.id ? "header__nav-link--active" : ""
+              }`}
             >
               {link.label}
-            </motion.a>
+            </a>
           ))}
         </nav>
 
-        {/* Right: Social icons + CTA + mobile toggle */}
-        <div className="hd-right">
-          <div className="hd-social" aria-hidden={false}>
-            <a href="https://github.com/" target="_blank" rel="noreferrer" aria-label="GitHub" className="hd-icon">
-              <Github size={20} />
+        {/* Right Section */}
+        <div className="header__actions">
+          <div className="header__socials">
+            <a
+              href="https://github.com/"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="GitHub"
+            >
+              <Github size={18} />
             </a>
-            <a href="https://linkedin.com/" target="_blank" rel="noreferrer" aria-label="LinkedIn" className="hd-icon">
-              <Linkedin size={20} />
-            </a>
-            <a href="mailto:youremail@gmail.com" aria-label="Email" className="hd-icon">
-              <Mail size={20} />
+            <a
+              href="https://linkedin.com/"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="LinkedIn"
+            >
+              <Linkedin size={18} />
             </a>
           </div>
+          <a href="#contact" className="header__cta">
+            Hire Me
+          </a>
 
-          <a href="#contact" className="hd-cta">Hire Me</a>
-
-          {/* Mobile menu button (visible on small screens via CSS) */}
+          {/* Mobile Toggle */}
           <button
-            onClick={() => setOpen((s) => !s)}
-            className="hd-mobile-btn"
-            aria-controls="mobile-menu"
-            aria-expanded={open}
-            aria-label={open ? "Close menu" : "Open menu"}
-            type="button"
+            className="header__toggle"
+            onClick={() => setIsOpen(!isOpen)}
+            aria-label="Toggle menu"
           >
-            {open ? <X size={22} /> : <Menu size={22} />}
+            {isOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Drawer / Menu */}
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            id="mobile-menu"
-            className="hd-mobile"
-            initial="hidden"
-            animate="enter"
-            exit="exit"
-            variants={mobileMenuVariants}
+      {/* Mobile Menu */}
+      <div className={`header__mobile ${isOpen ? "header__mobile--open" : ""}`}>
+        <nav className="header__mobile-nav">
+          {navLinks.map((link) => (
+            <a
+              key={link.id}
+              href={`#${link.id}`}
+              className="header__mobile-link"
+              onClick={() => setIsOpen(false)}
+            >
+              {link.label}
+            </a>
+          ))}
+        </nav>
+        <div className="header__mobile-footer">
+          <div className="header__mobile-socials">
+            <a href="https://github.com/" target="_blank" rel="noreferrer">
+              <Github size={20} />
+            </a>
+            <a href="https://linkedin.com/" target="_blank" rel="noreferrer">
+              <Linkedin size={20} />
+            </a>
+            <a href="mailto:email@example.com">
+              <Mail size={20} />
+            </a>
+          </div>
+          <a
+            href="#contact"
+            className="btn btn-primary"
+            onClick={() => setIsOpen(false)}
           >
-            <div className="hd-mobile-inner">
-              <div className="hd-mobile-links">
-                {navLinks.map((link) => (
-                  <a
-                    key={link.id}
-                    href={`#${link.id}`}
-                    onClick={() => setOpen(false)}
-                    className="hd-mobile-link"
-                  >
-                    {link.label}
-                  </a>
-                ))}
-              </div>
-
-              <div className="hd-mobile-footer">
-                <div className="hd-mobile-social">
-                  <a href="https://github.com/" target="_blank" rel="noreferrer" className="hd-icon"><Github size={20} /></a>
-                  <a href="https://linkedin.com/" target="_blank" rel="noreferrer" className="hd-icon"><Linkedin size={20} /></a>
-                  <a href="mailto:youremail@gmail.com" className="hd-icon"><Mail size={20} /></a>
-                </div>
-                <a href="#contact" onClick={() => setOpen(false)} className="hd-cta hd-mobile-cta">Hire Me</a>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            Get In Touch
+          </a>
+        </div>
+      </div>
     </header>
   );
-};
-
-export default Header;
+}

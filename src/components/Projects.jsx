@@ -1,332 +1,250 @@
-// ProjectSection.jsx
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
+import { ExternalLink, Github, Eye, X, ArrowRight } from "lucide-react";
 import "./Projects.css";
 
+const PROJECTS = [
+  {
+    id: 1,
+    title: "E-Commerce Platform",
+    description:
+      "A full-featured e-commerce solution with product management, cart functionality, secure checkout, and payment integration using Stripe.",
+    image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800",
+    tech: ["React", "Node.js", "MongoDB", "Stripe", "Redux"],
+    category: "Full Stack",
+    live: "#",
+    github: "#",
+    featured: true,
+  },
+  {
+    id: 2,
+    title: "Real-time Chat Application",
+    description:
+      "Instant messaging app with real-time communication, private rooms, typing indicators, and message history.",
+    image: "https://images.unsplash.com/photo-1611746872915-64382b5c76da?w=800",
+    tech: ["React", "Socket.io", "Express", "MongoDB"],
+    category: "Full Stack",
+    live: "#",
+    github: "#",
+    featured: true,
+  },
+  {
+    id: 3,
+    title: "Task Management System",
+    description:
+      "Kanban-style project management tool with drag-and-drop, team collaboration, and progress tracking.",
+    image: "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800",
+    tech: ["React", "TypeScript", "Node.js", "PostgreSQL"],
+    category: "Full Stack",
+    live: "#",
+    github: "#",
+  },
+  {
+    id: 4,
+    title: "Weather Dashboard",
+    description:
+      "Interactive weather application with real-time data, 7-day forecasts, and location-based search.",
+    image: "https://images.unsplash.com/photo-1592210454359-9043f067919b?w=800",
+    tech: ["React", "OpenWeather API", "Chart.js"],
+    category: "Frontend",
+    live: "#",
+    github: "#",
+  },
+  {
+    id: 5,
+    title: "Portfolio Website",
+    description:
+      "Modern, responsive portfolio website with smooth animations and optimized performance.",
+    image: "https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?w=800",
+    tech: ["React", "Framer Motion", "CSS"],
+    category: "Frontend",
+    live: "#",
+    github: "#",
+  },
+  {
+    id: 6,
+    title: "Blog Platform",
+    description:
+      "Full-featured blog with markdown editor, comments, categories, and SEO optimization.",
+    image: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800",
+    tech: ["Next.js", "MongoDB", "Tailwind CSS"],
+    category: "Full Stack",
+    live: "#",
+    github: "#",
+  },
+];
 
-export default function ProjectSection({ projects = null, simulateLoadMs = 800 }) {
-  const containerRef = useRef(null);
-  const gridRef = useRef(null);
-  const [loading, setLoading] = useState(true);
-  const [isListView, setIsListView] = useState(false);
-  const [modalProject, setModalProject] = useState(null);
+export default function Projects() {
+  const [selectedProject, setSelectedProject] = useState(null);
 
-  const defaultProjects = [
-    {
-      id: 1,
-      title: "E-commerce UI",
-      tech: "React • Context API • CSS",
-      desc: "Product listing, cart flow, filters and responsive UI.",
-      href: "#",
-      repo: "#",
-    },
-    {
-      id: 2,
-      title: "Real-time Chat",
-      tech: "Socket.io • Node • React",
-      desc: "Rooms, typing indicators, message history and media support.",
-      href: "#",
-      repo: "#",
-    },
-    {
-      id: 3,
-      title: "Portfolio Site",
-      tech: "React • CSS Animations",
-      desc: "Multi-section portfolio with smooth transitions and blog.",
-      href: "#",
-      repo: "#",
-    },
-    {
-      id: 4,
-      title: "Data Visualizer",
-      tech: "D3.js • React",
-      desc: "Custom charts, filters, export to PNG/CSV.",
-      href: "#",
-      repo: "#",
-    },
-  ];
-
-  const list = Array.isArray(projects) && projects.length ? projects : defaultProjects;
-
-  // simulated loading (use your fetch logic instead)
-  useEffect(() => {
-    const t = setTimeout(() => setLoading(false), simulateLoadMs);
-    return () => clearTimeout(t);
-  }, [simulateLoadMs]);
-
-  // intersection observer — reveal cards with stagger after load
-  useEffect(() => {
-    if (loading) return;
-    const root = containerRef.current;
-    if (!root) return;
-    const cards = root.querySelectorAll(".proj-card");
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("visible");
-            io.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.16 }
-    );
-    cards.forEach((c) => io.observe(c));
-    return () => io.disconnect();
-  }, [loading]);
-
-  // tilt handlers
-  const handleTilt = (e) => {
-    const card = e.currentTarget;
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const rx = ((y - rect.height / 2) / (rect.height / 2)).toFixed(3);
-    const ry = ((x - rect.width / 2) / (rect.width / 2)).toFixed(3);
-    card.style.setProperty("--rx", rx);
-    card.style.setProperty("--ry", ry);
-  };
-  const resetTilt = (e) => {
-    const card = e.currentTarget;
-    card.style.setProperty("--rx", 0);
-    card.style.setProperty("--ry", 0);
-  };
-
-  // toggle layout: set inline grid template for immediate effect
-  useEffect(() => {
-    const grid = gridRef.current;
-    if (!grid) return;
-    if (isListView) grid.style.gridTemplateColumns = "1fr";
-    else grid.style.gridTemplateColumns = "";
-  }, [isListView]);
-
-  // keyboard shortcut 'L' for toggle when component focused
-  useEffect(() => {
-    const root = containerRef.current;
-    if (!root) return;
-    const handler = (e) => {
-      if (e.key === "l" || e.key === "L") setIsListView((s) => !s);
-    };
-    root.addEventListener("keydown", handler);
-    return () => root.removeEventListener("keydown", handler);
-  }, []);
-
-  // open modal
-  function openModal(project) {
-    setModalProject(project);
-    // lock scroll
+  const openModal = (project) => {
+    setSelectedProject(project);
     document.body.style.overflow = "hidden";
-  }
-  function closeModal() {
-    setModalProject(null);
-    document.body.style.overflow = "";
-  }
+  };
 
-  // close modal on ESC
-  useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === "Escape") closeModal();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  const closeModal = () => {
+    setSelectedProject(null);
+    document.body.style.overflow = "";
+  };
 
   return (
-    <>
-      <section
-        id="projects"
-        className="projects-section"
-        aria-labelledby="projects-heading"
-        ref={containerRef}
-        tabIndex={-1} // to receive keyboard 'L' when focused
-      >
-        <div className="projects-inner">
-          <header className="projects-header" role="toolbar" aria-label="Projects controls">
-            <div>
-              <h2 id="projects-heading" className="projects-title">My Projects</h2>
-              <p className="projects-sub">Selected work — hover cards for micro-interactions</p>
-            </div>
-
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <div className="projects-count" aria-hidden>{list.length} projects</div>
-
-              
-            </div>
-          </header>
-
-          <div className="projects-grid" role="list" ref={gridRef}>
-            {loading
-              ? // skeletons
-                list.map((_, idx) => (
-                  <article key={idx} className="proj-card skeleton" style={{ ["--order"]: idx }} aria-hidden>
-                    <div className="border-anim" />
-                    <div className="glow" />
-                    <div className="skeleton-top">
-                      <div className="skeleton-thumb" />
-                      <div className="skeleton-lines">
-                        <div className="s-line s-line-title" />
-                        <div className="s-line s-line-meta" />
-                      </div>
-                    </div>
-                    <div className="s-line s-line-desc" />
-                    <div className="s-tags">
-                      <div className="s-tag" />
-                      <div className="s-tag" />
-                      <div className="s-tag" />
-                    </div>
-                    <div className="s-line s-line-cta" />
-                  </article>
-                ))
-              : // real cards
-                list.map((p, idx) => (
-                  <article
-                    key={p.id}
-                    className="proj-card"
-                    role="listitem"
-                    tabIndex={0}
-                    onMouseMove={handleTilt}
-                    onMouseLeave={resetTilt}
-                    onFocus={resetTilt}
-                    onBlur={resetTilt}
-                    style={{ ["--order"]: idx }}
-                  >
-                    <div className="border-anim" aria-hidden="true" />
-                    <div className="glow" aria-hidden="true" />
-
-                    <div className="proj-top">
-                      <div
-                        className="proj-thumb"
-                        aria-hidden="true"
-                        /* if you supply p.img you can set as background inline-style */
-                        style={p.img ? { backgroundImage: `url(${p.img})`, backgroundSize: "cover" } : {}}
-                      >
-                        {!p.img && (
-                          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                            <rect x="3" y="3" width="18" height="18" rx="3" fill="white" opacity="0.06" />
-                            <path d="M7 12l3 3 7-7" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.95" />
-                          </svg>
-                        )}
-                      </div>
-
-                      <div className="proj-body">
-                        <h3 className="proj-title">{p.title}</h3>
-                        <p className="proj-meta">{p.tech}</p>
-                      </div>
-                    </div>
-
-                    <p className="proj-desc">{p.desc}</p>
-
-                    <div className="proj-tags" aria-hidden>
-                      <span className="tag">UI</span>
-                      <span className="tag">Frontend</span>
-                      <span className="tag">Demo</span>
-                    </div>
-
-                    <div className="proj-actions">
-                      <button
-                        className="proj-cta"
-                        onClick={() => openModal(p)}
-                        aria-label={`View details for ${p.title}`}
-                      >
-                        View
-                      </button>
-
-                      {p.repo && (
-                        <a className="proj-cta" href={p.repo} target="_blank" rel="noopener noreferrer" title="Repository link">
-                          Repo
-                        </a>
-                      )}
-                    </div>
-                  </article>
-                ))}
-          </div>
+    <section className="projects section" id="projects">
+      <div className="container">
+        {/* Section Header */}
+        <div className="section-header">
+          <span className="section-label">My Work</span>
+          <h2 className="section-title">Featured Projects</h2>
+          <p className="section-subtitle">
+            A selection of projects that showcase my skills and experience
+          </p>
         </div>
-      </section>
 
-      {/* simple modal (inline-styles so no extra CSS needed) */}
-      {modalProject && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label={modalProject.title}
-          tabIndex={-1}
-          onClick={(e) => {
-            // close when clicking overlay
-            if (e.target === e.currentTarget) closeModal();
-          }}
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 9999,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "linear-gradient(180deg, rgba(2,6,23,0.6), rgba(2,6,23,0.85))",
-            padding: 20,
-          }}
-        >
-          <div
-            role="document"
-            style={{
-              width: "min(920px, 96%)",
-              background: "linear-gradient(180deg, rgba(15,23,36,0.98), rgba(8,12,20,0.98))",
-              borderRadius: 14,
-              padding: 20,
-              boxShadow: "0 30px 80px rgba(2,6,23,0.8)",
-              color: "var(--text)",
-              position: "relative",
-            }}
-          >
-            <button
-              onClick={closeModal}
-              style={{
-                position: "absolute",
-                right: 12,
-                top: 12,
-                background: "transparent",
-                border: "none",
-                color: "rgba(230,238,248,0.9)",
-                fontSize: 18,
-                cursor: "pointer",
-                padding: 8,
-              }}
-              aria-label="Close"
+        {/* Projects Grid */}
+        <div className="projects__grid">
+          {PROJECTS.map((project, index) => (
+            <article
+              key={project.id}
+              className={`project-card ${
+                project.featured ? "project-card--featured" : ""
+              }`}
+              style={{ "--delay": `${index * 0.1}s` }}
             >
-              ✕
-            </button>
-
-            <h3 style={{ marginTop: 6 }}>{modalProject.title}</h3>
-            <p style={{ color: "var(--muted)", marginTop: 6 }}>{modalProject.tech}</p>
-
-            <div style={{ display: "flex", gap: 18, marginTop: 16, alignItems: "flex-start", flexWrap: "wrap" }}>
-              <div style={{ flex: "0 0 320px", minHeight: 180, borderRadius: 10, overflow: "hidden", background: "#07101b" }}>
-                {modalProject.img ? (
-                  <img src={modalProject.img} alt={modalProject.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                ) : (
-                  <div style={{ padding: 18, color: "var(--muted)" }}>No image provided</div>
+              {/* Image */}
+              <div className="project-card__image">
+                <img src={project.image} alt={project.title} />
+                <div className="project-card__overlay">
+                  <button
+                    className="project-card__view"
+                    onClick={() => openModal(project)}
+                  >
+                    <Eye size={20} />
+                    <span>View Details</span>
+                  </button>
+                </div>
+                {project.featured && (
+                  <span className="project-card__badge">Featured</span>
                 )}
               </div>
 
-              <div style={{ flex: "1 1 320px" }}>
-                <p style={{ lineHeight: 1.6 }}>{modalProject.desc}</p>
-                <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  <span style={{ padding: "6px 10px", background: "rgba(255,255,255,0.03)", borderRadius: 999 }}>UI</span>
-                  <span style={{ padding: "6px 10px", background: "rgba(255,255,255,0.03)", borderRadius: 999 }}>Frontend</span>
-                  <span style={{ padding: "6px 10px", background: "rgba(255,255,255,0.03)", borderRadius: 999 }}>{modalProject.tech.split("•")[0]}</span>
+              {/* Content */}
+              <div className="project-card__content">
+                <span className="project-card__category">
+                  {project.category}
+                </span>
+                <h3 className="project-card__title">{project.title}</h3>
+                <p className="project-card__description">
+                  {project.description}
+                </p>
+
+                <div className="project-card__tech">
+                  {project.tech.slice(0, 3).map((tech, i) => (
+                    <span key={i} className="project-card__tech-tag">
+                      {tech}
+                    </span>
+                  ))}
+                  {project.tech.length > 3 && (
+                    <span className="project-card__tech-more">
+                      +{project.tech.length - 3}
+                    </span>
+                  )}
                 </div>
 
-                <div style={{ marginTop: 18, display: "flex", gap: 10 }}>
-                  {modalProject.href && modalProject.href !== "#" && (
-                    <a href={modalProject.href} target="_blank" rel="noreferrer" className="proj-cta">Live</a>
-                  )}
-                  {modalProject.repo && modalProject.repo !== "#" && (
-                    <a href={modalProject.repo} target="_blank" rel="noreferrer" className="proj-cta">Repository</a>
-                  )}
+                <div className="project-card__actions">
+                  <a
+                    href={project.live}
+                    className="project-card__link"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <ExternalLink size={16} />
+                    <span>Live Demo</span>
+                  </a>
+                  <a
+                    href={project.github}
+                    className="project-card__link project-card__link--secondary"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <Github size={16} />
+                    <span>Code</span>
+                  </a>
                 </div>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        {/* View All Button */}
+        <div className="projects__footer">
+          <a
+            href="https://github.com/"
+            target="_blank"
+            rel="noreferrer"
+            className="btn btn-secondary"
+          >
+            <Github size={18} />
+            <span>View All on GitHub</span>
+            <ArrowRight size={18} />
+          </a>
+        </div>
+      </div>
+
+      {/* Modal */}
+      {selectedProject && (
+        <div className="project-modal" onClick={closeModal}>
+          <div
+            className="project-modal__content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button className="project-modal__close" onClick={closeModal}>
+              <X size={24} />
+            </button>
+
+            <div className="project-modal__image">
+              <img src={selectedProject.image} alt={selectedProject.title} />
+            </div>
+
+            <div className="project-modal__body">
+              <span className="project-modal__category">
+                {selectedProject.category}
+              </span>
+              <h3 className="project-modal__title">{selectedProject.title}</h3>
+              <p className="project-modal__description">
+                {selectedProject.description}
+              </p>
+
+              <div className="project-modal__tech">
+                <h4>Technologies Used:</h4>
+                <div className="project-modal__tech-list">
+                  {selectedProject.tech.map((tech, i) => (
+                    <span key={i}>{tech}</span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="project-modal__actions">
+                <a
+                  href={selectedProject.live}
+                  className="btn btn-primary"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <ExternalLink size={18} />
+                  <span>View Live Demo</span>
+                </a>
+                <a
+                  href={selectedProject.github}
+                  className="btn btn-secondary"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <Github size={18} />
+                  <span>View Code</span>
+                </a>
               </div>
             </div>
           </div>
         </div>
       )}
-    </>
+    </section>
   );
 }

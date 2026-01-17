@@ -1,23 +1,25 @@
 import React from "react";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
-import './App.css'
+import About from "./components/About";
+import Skills from "./components/Skills";
 import Projects from "./components/Projects";
-import Skils from "./components/Skils";
-import About from "./components/about";
-import ContactSection from "./components/Contact";
+import Contact from "./components/Contact";
+import Footer from "./components/Footer";
+import "./App.css";
 
 export default function App() {
   return (
-    <>
-      <div className="hidden" id="home"></div>
+    <div className="app">
       <Header />
-      <Hero />
-      <Projects />
-      <Skils />
-      <About/>
-      <ContactSection/>
-    </>
+      <main>
+        <Hero />
+        <About />
+        <Skills />
+        <Projects />
+        <Contact />
+      </main>
+      <Footer />
+    </div>
   );
 }
-
